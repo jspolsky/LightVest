@@ -1,134 +1,137 @@
-#include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
+/*
 
-#define PIN 1
+LED VU meter for Arduino and Adafruit NeoPixel LEDs.
 
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(40, PIN, NEO_GRB + NEO_KHZ800);
+Requires:
+	* 8x32 NeoPixel matrix (https://www.adafruit.com/product/2294)
+	* Arduino Uno
+	* Adafruit electret microphone (https://www.adafruit.com/product/1063)
 
-// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
-// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
-// and minimize distance between Arduino and first pixel.  Avoid connecting
-// on a live circuit...if you must, connect GND first.
+Features:
+	* Automatic gain control
 
-void setup() {
-  // This is for Trinket 5V 16MHz, you can remove these three lines if you are not using a Trinket
-  #if defined (__AVR_ATtiny85__)
-    if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
-  #endif
-  // End of trinket special code
 
-  strip.begin();
-  strip.setBrightness(15);
-  strip.show(); // Initialize all pixels to 'off'
+ Hardware requirements:
+ - Most Arduino or Arduino-compatible boards (ATmega 328P or better).
+ - Adafruit Electret Microphone Amplifier (ID: 1063)
+ - Adafruit Flora RGB Smart Pixels (ID: 1260)
+ OR
+ - Adafruit NeoPixel Digital LED strip (ID: 1138)
+ - Optional: battery for portable use (else power through USB or adapter)
+ Software requirements:
+ - Adafruit NeoPixel library
+ 
+ Connections:
+ - 3.3V to mic amp +
+ - GND to mic amp -
+ - Analog pin to microphone output (configurable below)
+ - Digital pin to LED data input (configurable below)
+
+ See notes in setup() regarding 5V vs. 3.3V boards - there may be an
+ extra connection to make and one line of code to enable or disable.
+ 
+ */
+
+#include <SPI.h> 
+#include <math.h>
+
+
+#include "VUDisplayClassVest.h"
+
+#define MIC_PIN   		A1  	// Microphone is attached to this analog pin
+
+
+
+#define SAMPLE_WINDOW   10  	// Sample window for average level, in milliseconds -- try 10.
+
+
+uint16_t peak = 0;      // Peak level of column; used for falling dots
+byte peakCycle = 0;     // Toggles between 0 and 1. To prevent peak falling too fast, it only falls when this is 0
+
+// LOOK YOU GUYS I HAVE AUTOMATIC GAIN CONTROL!
+unsigned long millisAdjusted;   // the last time we adjusted the gain. Every second we'll reevaluate
+float dbMax;					// max db recorded in the last second
+float dbRange;					// current range of dbs which will be scaled to (0..WIDTH)
+
+
+VUDisplayClassVest display(Serial);
+
+void setup() 
+{
+
+	peak = peakCycle = 0;
+	millisAdjusted = millis();
+	dbMax = 0.0; dbRange = 2.0;
+
+	Serial.begin(250000);
+	display.setup();
+
+//	analogReference(EXTERNAL);  // for 5V Arduinos like Uno, connect the mic to the AREF pin, and leave this on.
+								// for 3.3v Arduinos like Flora, Gemma, comment this out.
+
 }
 
-void loop() {
-  // Some example procedures showing how to display to the pixels:
-  colorWipe(strip.Color(255, 0, 0), 50); // Red
-  colorWipe(strip.Color(0, 255, 0), 50); // Green
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
-//colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-  // Send a theater pixel chase in...
-  theaterChase(strip.Color(127, 127, 127), 50); // White
-  theaterChase(strip.Color(127, 0, 0), 50); // Red
-  theaterChase(strip.Color(0, 0, 127), 50); // Blue
+void loop() 
+{
 
-  rainbow(20);
-  rainbowCycle(20);
-  theaterChaseRainbow(50);
+	peakCycle = (peakCycle + 1) % 2;
+
+	unsigned long startMillis = millis();  // Start of sample window
+
+	uint16_t signalMax = 0;
+	uint16_t signalMin = 1023;
+	uint16_t scaledLevel = 0;
+
+	float db = 0.0;
+
+	// collect data for length of sample window (in mS)
+	while (millis() - startMillis < SAMPLE_WINDOW)
+	{
+		uint16_t sample = analogRead(MIC_PIN);
+		if (sample < 1024)  // toss out spurious readings
+		{
+			if (sample > signalMax)
+			{
+				signalMax = sample;  // save just the max levels
+			}
+			else if (sample < signalMin)
+			{
+				signalMin = sample;  // save just the min levels
+			}
+		}
+	}
+
+	db = dbScale(signalMax, signalMin, 0.5);
+	dbMax = max(dbMax, db);
+	scaledLevel = min(display.getRange(), (floor((db / dbRange * (float) display.getRange()))));
+
+	// has 1 second elapsed since we last calculated scaling factor?
+	if (millisAdjusted + 1000L < millis()) 
+	{
+		millisAdjusted = millis();
+		dbRange = max(dbMax, 0.3);
+		dbMax = 0.0;
+	}
+
+	if (scaledLevel > peak)
+		peak = scaledLevel;
+	else if (peak > 0 && peakCycle == 0)
+		peak--;
+
+	display.showMeter(scaledLevel, peak);
+
 }
 
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
-    delay(wait);
-  }
-}
+/*
+ *		Calculates decibels based on the peak-to-peak voltage 
+ *		Subtracts dbFloor so as to return 0 when it's basically quiet
+ */
+float dbScale( float signalMax, float signalMin, float dbFloor )
+{
+	float db = 20.0 * log10( signalMax / signalMin ); 
+	float result = db - dbFloor;
+	if (result < 0.0)
+		result = 0.0;
 
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) {
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    for(i=0; i< strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-  for (int j=0; j<10; j++) {  //do 10 cycles of chasing
-    for (int q=0; q < 3; q++) {
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, c);    //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, 0);        //turn every third pixel off
-      }
-    }
-  }
-}
-
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
-    for (int q=0; q < 3; q++) {
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
-        strip.setPixelColor(i+q, 0);        //turn every third pixel off
-      }
-    }
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if(WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if(WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+	return result;
 }
