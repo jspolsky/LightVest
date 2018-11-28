@@ -16,27 +16,25 @@ uint16_t VUDisplayClassVest::getRange()
 
 void VUDisplayClassVest::showMeter(uint16_t level, uint16_t peak)
 {
+
 	uint32_t offColor = strip.Color(0,0,0),
-		     peakColor = strip.Color(0,0,255);
+		     peakColor = strip.Color(255,255,255);
 
-	for (uint16_t x = 0; x < 10; x++)
-	{
-		uint32_t positionColor = Wheel(map(x,0,getRange(),0,255));
-
-		if (x == peak && peak != 0)
-			positionColor = peakColor;
-		else if (x >= level)
-			positionColor = offColor;
-		
-		strip.setPixelColor(9-x, positionColor);
-		strip.setPixelColor(x+30, positionColor);
-	}
-
-	for (uint16_t x = 10; x < 30; x++)
+	for (uint16_t x = 0; x < 40; x++)
 		strip.setPixelColor(x, offColor);
 
-    strip.show();
+	for (uint16_t x = 0; x < level; x++) {
+		strip.setPixelColor(9-x,   Wheel(map(x, 0, getRange(), 0, 255)));
+		strip.setPixelColor(x+30,  Wheel(map(x, 0, getRange(), 0, 255)));
+	}
 
+	if (peak > 2)
+	{
+		strip.setPixelColor(9-peak, peakColor);
+		strip.setPixelColor(peak+30, peakColor);	
+	}
+
+    strip.show();
 }
 
 

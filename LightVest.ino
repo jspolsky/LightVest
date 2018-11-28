@@ -76,9 +76,9 @@ void setup()
 void loop() 
 {
 
-  Serial.println(DebouncedButtonPress());
+  // Serial.println(DebouncedButtonPress());
 
-	peakCycle = (peakCycle + 1) % 2;
+	peakCycle = (peakCycle + 1) % 10;
 
 	unsigned long startMillis = millis();  // Start of sample window
 
@@ -106,6 +106,9 @@ void loop()
 	}
 
 	db = dbScale(signalMax, signalMin, 0.5);
+
+//  Serial.print(db); Serial.print(","); Serial.println(dbRange);
+
 	dbMax = max(dbMax, db);
 	scaledLevel = min(display.getRange(), (floor((db / dbRange * (float) display.getRange()))));
 
@@ -113,7 +116,7 @@ void loop()
 	if (millisAdjusted + 1000L < millis()) 
 	{
 		millisAdjusted = millis();
-		dbRange = max(dbMax, 0.3);
+		dbRange = max(dbMax, 2.0);
 		dbMax = 0.0;
 	}
 
@@ -141,19 +144,14 @@ float dbScale( float signalMax, float signalMin, float dbFloor )
 }
 
 
-btn_t WhichButton()
-{
-  uint32_t raw = analogRead(BUTTONS_PIN);
 
-  if (raw < 250) return BUTTONS_NONE;
-  if (raw < 500) return BUTTONS_COLOR;
-  if (raw < 825) return BUTTONS_BRIGHTNESS;
-  return BUTTONS_MODE;
-}
-
-
-
-// Debounces.
+// Button processing.
+//
+// Call DebouncedButtonPress to find out if a button has been pressed.
+// If it returns BUTTONS_NONE, nothing has been pressed.
+// Otherwise treat the result as a press.
+// Note that it will only return each press once no matter how long
+// the user holds down the button.
 
 btn_t DebouncedButtonPress()
 {
@@ -187,3 +185,16 @@ bool Debounce()
 
     return false;
 }
+
+
+
+btn_t WhichButton()
+{
+  uint32_t raw = analogRead(BUTTONS_PIN);
+
+  if (raw < 250) return BUTTONS_NONE;
+  if (raw < 500) return BUTTONS_COLOR;
+  if (raw < 825) return BUTTONS_BRIGHTNESS;
+  return BUTTONS_MODE;
+}
+
