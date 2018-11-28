@@ -39,7 +39,9 @@ Features:
 #include "VUDisplayClassVest.h"
 
 #define MIC_PIN   		A1  	// Microphone is attached to this analog pin
+#define BUTTONS_PIN   A2
 
+typedef enum { BUTTONS_NONE, BUTTONS_MODE, BUTTONS_COLOR, BUTTONS_BRIGHTNESS } btn_t;
 
 
 #define SAMPLE_WINDOW   10  	// Sample window for average level, in milliseconds -- try 10.
@@ -73,6 +75,8 @@ void setup()
 
 void loop() 
 {
+
+  Serial.println(DebouncedButtonPress());
 
 	peakCycle = (peakCycle + 1) % 2;
 
@@ -134,4 +138,52 @@ float dbScale( float signalMax, float signalMin, float dbFloor )
 		result = 0.0;
 
 	return result;
+}
+
+
+btn_t WhichButton()
+{
+  uint32_t raw = analogRead(BUTTONS_PIN);
+
+  if (raw < 250) return BUTTONS_NONE;
+  if (raw < 500) return BUTTONS_COLOR;
+  if (raw < 825) return BUTTONS_BRIGHTNESS;
+  return BUTTONS_MODE;
+}
+
+
+
+// Debounces.
+
+btn_t DebouncedButtonPress()
+{
+    static btn_t switchState = BUTTONS_NONE;
+
+    btn_t f = BUTTONS_NONE;
+    btn_t newSwitchState = WhichButton();
+
+    if (newSwitchState != BUTTONS_NONE && switchState == BUTTONS_NONE)
+    {
+        // have I been here lately?
+        if (Debounce())
+        {
+            f = newSwitchState;
+        }
+    }
+
+    switchState = newSwitchState;
+    return f;
+}
+
+bool Debounce()
+{
+    static unsigned long debounceTime = 0;
+
+    if (millis() - debounceTime > 100UL)
+    {
+        debounceTime = millis();
+        return true;
+    }
+
+    return false;
 }
