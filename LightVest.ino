@@ -42,13 +42,16 @@ Features:
 #define BUTTONS_PIN   A2
 
 typedef enum { BUTTONS_NONE, BUTTONS_MODE, BUTTONS_COLOR, BUTTONS_BRIGHTNESS } btn_t;
-
+typedef enum { VMODE_VU, 
+               VMODE_SOLID, 
+               VMODE_UNUSED } vmode_t;
 
 #define SAMPLE_WINDOW   10  	// Sample window for average level, in milliseconds -- try 10.
 
 
 uint16_t peak = 0;      // Peak level of column; used for falling dots
 byte peakCycle = 0;     // Toggles between 0 and 1. To prevent peak falling too fast, it only falls when this is 0
+vmode_t vmode = VMODE_VU;
 
 // LOOK YOU GUYS I HAVE AUTOMATIC GAIN CONTROL!
 unsigned long millisAdjusted;   // the last time we adjusted the gain. Every second we'll reevaluate
@@ -73,10 +76,43 @@ void setup()
 
 }
 
-void loop() 
-{
 
-  // Serial.println(DebouncedButtonPress());
+void loop()
+{
+  btn_t b = DebouncedButtonPress();
+
+  if (b == BUTTONS_MODE)
+  {
+    vmode = static_cast<vmode_t> ((int(vmode) + 1) % (int(VMODE_UNUSED)));
+  }
+
+  if (b == BUTTONS_COLOR)
+  {
+    if (vmode == VMODE_SOLID)
+      display.ToggleSolidColor();
+  }
+
+  switch (vmode)
+  {
+    case VMODE_VU:
+      loopVU(); 
+      break;
+
+    case VMODE_SOLID:
+      loopSolid();
+      break;
+  }
+}
+
+
+void loopSolid()
+{
+  display.Solid();
+}
+
+
+void loopVU() 
+{
 
 	peakCycle = (peakCycle + 1) % 10;
 
