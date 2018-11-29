@@ -18,11 +18,13 @@ class VUDisplayClassVest
         void showMeter(uint16_t level, uint16_t peak);
         void Solid();
         void ToggleSolidColor();
+        void ToggleBrightness();
 
     private:
         Stream& Serial;
         uint32_t Wheel(byte WheelPos);
-        int iSolidColor; // color for Solid() mode
+        int iSolidColor;            // color for Solid() mode
+        int iBrightnessLevel;       
         uint32_t CorrectedColor( byte r, byte g, byte b );
     
     public:    

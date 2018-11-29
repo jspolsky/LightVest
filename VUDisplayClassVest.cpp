@@ -26,7 +26,8 @@ void VUDisplayClassVest::setup()
     
     strip = Adafruit_NeoPixel(N_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
     strip.begin();
-    strip.setBrightness(30);
+	iBrightnessLevel = 2;
+	ToggleBrightness();
 
 	iSolidColor = 0;
 
@@ -86,6 +87,14 @@ void VUDisplayClassVest::Solid()
 void VUDisplayClassVest::ToggleSolidColor()
 {
 	iSolidColor = (iSolidColor + 1)	% 8;
+}
+
+void VUDisplayClassVest::ToggleBrightness()
+{
+	static byte brightMap[] = {1, 4, 8, 16, 32, 64};
+
+	iBrightnessLevel = (iBrightnessLevel + 1) % 6;
+	strip.setBrightness(brightMap[iBrightnessLevel]);
 }
 
 

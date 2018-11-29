@@ -92,6 +92,11 @@ void loop()
       display.ToggleSolidColor();
   }
 
+  if (b == BUTTONS_BRIGHTNESS)
+  {
+    display.ToggleBrightness();
+  }
+
   switch (vmode)
   {
     case VMODE_VU:
