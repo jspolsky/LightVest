@@ -20,6 +20,7 @@ Features:
 
 
 #include "VUDisplayClassVest.h"
+#include "InternalDotStar.h"
 
 #define MIC_PIN   		A1  	// Microphone is attached to this analog pin
 #define BUTTONS_PIN   A2
@@ -43,6 +44,7 @@ float dbRange;					// current range of dbs which will be scaled to (0..WIDTH)
 
 
 VUDisplayClassVest display(Serial);
+InternalDotStar internalDotStar(Serial);
 
 void setup() 
 {
@@ -53,6 +55,7 @@ void setup()
 
 	Serial.begin(250000);
 	display.setup();
+  internalDotStar.setup();
 
 //	analogReference(EXTERNAL);  // for 5V Arduinos like Uno, connect the mic to the AREF pin, and leave this on.
 								// for 3.3v Arduinos like Flora, Gemma, comment this out.
@@ -67,17 +70,21 @@ void loop()
   if (b == BUTTONS_MODE)
   {
     vmode = static_cast<vmode_t> ((int(vmode) + 1) % (int(VMODE_UNUSED)));
+    internalDotStar.flash(0,0,255);
   }
 
   if (b == BUTTONS_COLOR)
   {
     if (vmode == VMODE_SOLID)
       display.ToggleSolidColor();
+
+    internalDotStar.flash(0,255,0);
   }
 
   if (b == BUTTONS_BRIGHTNESS)
   {
     display.ToggleBrightness();
+    internalDotStar.flash(255,0,0);
   }
 
   switch (vmode)
