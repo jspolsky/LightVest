@@ -1,35 +1,18 @@
 /*
 
-LED VU meter for Arduino and Adafruit NeoPixel LEDs.
+LED Light Vest
 
 Requires:
-	* 8x32 NeoPixel matrix (https://www.adafruit.com/product/2294)
-	* Arduino Uno
+  * Adafruit Gemma M0 controller
 	* Adafruit electret microphone (https://www.adafruit.com/product/1063)
+  * Three buttons to control display mode, color scheme, and brightness
+  * Battery pack for portable use
 
 Features:
 	* Automatic gain control
+  * Multiple display modes including VU meter, steady lights, flashlight mode,
+    and various entertaining light shows
 
-
- Hardware requirements:
- - Most Arduino or Arduino-compatible boards (ATmega 328P or better).
- - Adafruit Electret Microphone Amplifier (ID: 1063)
- - Adafruit Flora RGB Smart Pixels (ID: 1260)
- OR
- - Adafruit NeoPixel Digital LED strip (ID: 1138)
- - Optional: battery for portable use (else power through USB or adapter)
- Software requirements:
- - Adafruit NeoPixel library
- 
- Connections:
- - 3.3V to mic amp +
- - GND to mic amp -
- - Analog pin to microphone output (configurable below)
- - Digital pin to LED data input (configurable below)
-
- See notes in setup() regarding 5V vs. 3.3V boards - there may be an
- extra connection to make and one line of code to enable or disable.
- 
  */
 
 #include <SPI.h> 
