@@ -2,7 +2,7 @@
 #include <Adafruit_NeoPixel.h>
 
 #define PIN 1 
-#define N_PIXELS 40
+#define N_PIXELS 52
 
 
 class VUDisplayClassVest

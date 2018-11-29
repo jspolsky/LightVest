@@ -166,6 +166,8 @@ void loopVU()
 	else if (peak > 0 && peakCycle == 0)
 		peak--;
 
+//  Serial.print(scaledLevel); Serial.print(","); Serial.println(peak);
+
 	display.showMeter(scaledLevel, peak);
 
 }
