@@ -33,7 +33,7 @@ typedef enum { VMODE_VU,
 #define SAMPLE_WINDOW   10  	// Sample window for average level, in milliseconds -- try 10.
 
 
-uint16_t peak = 0;      // Peak level of column; used for falling dots
+byte peak = 0;      // Peak level of column; used for falling dots
 byte peakCycle = 0;     // Toggles between 0 and 1. To prevent peak falling too fast, it only falls when this is 0
 vmode_t vmode = VMODE_VU;
 
@@ -77,6 +77,8 @@ void loop()
   {
     if (vmode == VMODE_SOLID)
       display.ToggleSolidColor();
+    else if (vmode == VMODE_VU)
+      display.ToggleVUMeterMode();
 
     internalDotStar.flash(0,255,0);
   }
@@ -115,7 +117,7 @@ void loopVU()
 
 	uint16_t signalMax = 0;
 	uint16_t signalMin = 1023;
-	uint16_t scaledLevel = 0;
+	byte scaledLevel = 0;
 
 	float db = 0.0;
 

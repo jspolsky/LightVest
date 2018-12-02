@@ -30,6 +30,7 @@ void VUDisplayClassVest::setup()
 	ToggleBrightness();
 
 	iSolidColor = 0;
+	iVUMeterMode = 0;
 
 }
 
@@ -38,25 +39,78 @@ uint16_t VUDisplayClassVest::getRange()
     return 10;
 }
 
-void VUDisplayClassVest::showMeter(uint16_t level, uint16_t peak)
+// returns the color to be displayed based on the position, between 0 and 9
+//
+uint32_t VUDisplayClassVest::VUColor( byte b )
+{
+	// ok so this is your basic rainbow scheme
+	static uint32_t colorMap[] = 
+		{
+			CorrectedColor(0,0,143),	
+			CorrectedColor(255,0,255),	
+			CorrectedColor(255,0,0),		
+			CorrectedColor(255,128,0),		
+			CorrectedColor(255,255,0),		
+			CorrectedColor(0,255,0),		
+			CorrectedColor(0,255,178),		
+			CorrectedColor(0,255,255),		
+			CorrectedColor(0,128,255),	
+			CorrectedColor(255,255,255),	
+		};
+
+	return colorMap[ b ];
+}
+
+
+void VUDisplayClassVest::showMeter(byte level, byte peak)
 {
 
 	uint32_t offColor = strip.Color(0,0,0),
-		     peakColor = CorrectedColor(30,144,255);
+		     peakColor = VUColor(peak-1),
+			 whiteColor = CorrectedColor(255,255,255);
 
 	for (uint16_t x = 0; x < N_PIXELS; x++)
 		strip.setPixelColor(x, offColor);
 
-	if (peak > 0)
+	switch (iVUMeterMode)
 	{
-		strip.setPixelColor(10-peak, peakColor);
-		strip.setPixelColor(peak+29, peakColor);	
-	}
-	
-	for (uint16_t x = 0; x < level; x++) 
-	{
-		strip.setPixelColor(9-x,   Wheel(map(x, 0, getRange(), 0, 255)));
-		strip.setPixelColor(x+30,  Wheel(map(x, 0, getRange(), 0, 255)));
+		case 0:	// NORMAL RAINBOW
+			if (peak > 0)
+			{
+				strip.setPixelColor(10-peak, peakColor);
+				strip.setPixelColor(peak+29, peakColor);	
+			}
+			
+			for (byte x = 0; x < level; x++) 
+			{	
+				strip.setPixelColor(9-x,   VUColor(x));
+				strip.setPixelColor(x+30,  VUColor(x));
+			}
+			break;
+
+		case 1:	// One dot?
+			if (peak > 0)
+			{
+				strip.setPixelColor(10-peak, peakColor);
+				strip.setPixelColor(peak+29, peakColor);	
+			}
+			
+			break;
+
+		case 2: // white
+			if (peak > 0)
+			{
+				strip.setPixelColor(10-peak, whiteColor);
+				strip.setPixelColor(peak+29, whiteColor);	
+			}
+			
+			for (byte x = 0; x < level; x++) 
+			{	
+				strip.setPixelColor(9-x,   whiteColor);
+				strip.setPixelColor(x+30,  whiteColor);
+			}
+			break;
+
 	}
 
     strip.show();
@@ -98,6 +152,10 @@ void VUDisplayClassVest::ToggleBrightness()
 	strip.setBrightness(brightMap[iBrightnessLevel]);
 }
 
+void VUDisplayClassVest::ToggleVUMeterMode()
+{
+	iVUMeterMode = (iVUMeterMode + 1) % 3;
+}
 
 
 uint32_t VUDisplayClassVest::CorrectedColor( byte r, byte g, byte b )
@@ -110,19 +168,3 @@ uint32_t VUDisplayClassVest::CorrectedColor( byte r, byte g, byte b )
 }
 
 
-
-// Input a value 0 to 255 to get a color value.
-// The colors are a transition r - g - b - back to r.
-uint32_t VUDisplayClassVest::Wheel(byte WheelPos) {
-	if(WheelPos < 85) {
-		return CorrectedColor(WheelPos * 3, 255 - WheelPos * 3, 0);
-	} 
-	else if(WheelPos < 170) {
-		WheelPos -= 85;
-		return CorrectedColor(255 - WheelPos * 3, 0, WheelPos * 3);
-	} 
-	else {
-		WheelPos -= 170;
-		return CorrectedColor(0, WheelPos * 3, 255 - WheelPos * 3);
-	}
-}

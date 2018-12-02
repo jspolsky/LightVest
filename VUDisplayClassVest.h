@@ -15,16 +15,18 @@ class VUDisplayClassVest
         void setup();
         uint16_t getRange();
 
-        void showMeter(uint16_t level, uint16_t peak);
+        void showMeter(byte level, byte peak);
         void Solid();
         void ToggleSolidColor();
+        void ToggleVUMeterMode();
         void ToggleBrightness();
 
     private:
         Stream& Serial;
-        uint32_t Wheel(byte WheelPos);
-        int iSolidColor;            // color for Solid() mode
-        int iBrightnessLevel;       
+        byte iSolidColor;            // color for Solid() mode
+        byte iVUMeterMode;
+        byte iBrightnessLevel;       
+        uint32_t VUColor(byte level);
         uint32_t CorrectedColor( byte r, byte g, byte b );
     
     public:    
