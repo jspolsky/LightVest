@@ -62,7 +62,7 @@ uint32_t VUDisplayClassVest::VUColor( byte b )
 }
 
 
-void VUDisplayClassVest::showMeter(byte level, byte peak)
+void VUDisplayClassVest::ShowMeter(byte level, byte peak)
 {
 
 	uint32_t offColor = strip.Color(0,0,0),
@@ -116,7 +116,7 @@ void VUDisplayClassVest::showMeter(byte level, byte peak)
     strip.show();
 }
 
-void VUDisplayClassVest::Solid()
+void VUDisplayClassVest::ShowSolid()
 {
 	static uint32_t colorMap[] = 
 		{
@@ -139,6 +139,21 @@ void VUDisplayClassVest::Solid()
 	strip.show();
 }
 
+void VUDisplayClassVest::ShowMessage()
+{
+	for (uint16_t x = 0; x < N_PIXELS; x++)
+		if (random(0,100) < 30)
+		{
+			strip.setPixelColor(x, CorrectedColor(255,255,255));
+		}
+		else
+		{
+			strip.setPixelColor(x, CorrectedColor(0,0,0));
+		}
+
+	strip.show();
+}
+
 void VUDisplayClassVest::ToggleSolidColor()
 {
 	iSolidColor = (iSolidColor + 1)	% 8;
@@ -156,6 +171,8 @@ void VUDisplayClassVest::ToggleVUMeterMode()
 {
 	iVUMeterMode = (iVUMeterMode + 1) % 3;
 }
+
+
 
 
 uint32_t VUDisplayClassVest::CorrectedColor( byte r, byte g, byte b )

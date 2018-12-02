@@ -15,8 +15,9 @@ class VUDisplayClassVest
         void setup();
         uint16_t getRange();
 
-        void showMeter(byte level, byte peak);
-        void Solid();
+        void ShowMeter(byte level, byte peak);
+        void ShowSolid();
+        void ShowMessage();
         void ToggleSolidColor();
         void ToggleVUMeterMode();
         void ToggleBrightness();

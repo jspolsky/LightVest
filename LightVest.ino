@@ -28,6 +28,7 @@ Features:
 typedef enum { BUTTONS_NONE, BUTTONS_MODE, BUTTONS_COLOR, BUTTONS_BRIGHTNESS } btn_t;
 typedef enum { VMODE_VU, 
                VMODE_SOLID, 
+               VMODE_MESSAGES,
                VMODE_UNUSED } vmode_t;
 
 #define SAMPLE_WINDOW   10  	// Sample window for average level, in milliseconds -- try 10.
@@ -98,15 +99,31 @@ void loop()
     case VMODE_SOLID:
       loopSolid();
       break;
+
+    case VMODE_MESSAGES:
+      loopMessages();
+      break;
   }
 }
 
 
 void loopSolid()
 {
-  display.Solid();
+  display.ShowSolid();
 }
 
+
+void loopMessages()
+{
+  static unsigned long millisLastUpdated = 0L;
+
+  unsigned long millisNow = millis();
+  if (millisLastUpdated + 468L < millisNow)
+  {
+    millisLastUpdated = millisNow;
+    display.ShowMessage();
+  }
+}
 
 void loopVU() 
 {
@@ -160,7 +177,7 @@ void loopVU()
 
 //  Serial.print(scaledLevel); Serial.print(","); Serial.println(peak);
 
-	display.showMeter(scaledLevel, peak);
+	display.ShowMeter(scaledLevel, peak);
 
 }
 
