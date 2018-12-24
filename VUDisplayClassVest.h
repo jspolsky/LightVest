@@ -17,7 +17,7 @@ class VUDisplayClassVest
 
         void ShowMeter(byte level, byte peak);
         void ShowSolid();
-        void ShowMessage();
+        void ShowMessage( byte revision );
         void ToggleSolidColor();
         void ToggleVUMeterMode();
         void ToggleBrightness();

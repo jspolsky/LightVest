@@ -116,12 +116,15 @@ void loopSolid()
 void loopMessages()
 {
   static unsigned long millisLastUpdated = 0L;
+  static byte revision = 0;
 
   unsigned long millisNow = millis();
   if (millisLastUpdated + 468L < millisNow)
   {
     millisLastUpdated = millisNow;
-    display.ShowMessage();
+    display.ShowMessage( revision );
+
+    revision = (revision + 1) % 4;
   }
 }
 

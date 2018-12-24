@@ -135,10 +135,10 @@ void VUDisplayClassVest::ShowSolid()
 	strip.show();
 }
 
-void VUDisplayClassVest::ShowMessage()
+void VUDisplayClassVest::ShowMessage( byte revision )
 {
 	for (uint16_t x = 0; x < N_PIXELS; x++)
-		if (random(0,100) < 30)
+		if (x % 4 == revision)
 		{
 			strip.setPixelColor(x, CorrectedColor(255,255,255));
 		}
