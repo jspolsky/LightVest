@@ -26,7 +26,7 @@ void VUDisplayClassVest::setup()
     
     strip = Adafruit_NeoPixel(N_PIXELS, PIN, NEO_GRB + NEO_KHZ800);
     strip.begin();
-	iBrightnessLevel = 2;
+	iBrightnessLevel = 0;
 	ToggleBrightness();
 
 	iSolidColor = 0;
@@ -74,7 +74,16 @@ void VUDisplayClassVest::ShowMeter(byte level, byte peak)
 
 	switch (iVUMeterMode)
 	{
-		case 0:	// NORMAL RAINBOW
+		case 0:	// One dot
+			if (peak > 0)
+			{
+				strip.setPixelColor(10-peak, peakColor);
+				strip.setPixelColor(peak+29, peakColor);	
+			}
+			
+			break;
+
+		case 1:	// NORMAL RAINBOW
 			if (peak > 0)
 			{
 				strip.setPixelColor(10-peak, peakColor);
@@ -86,15 +95,6 @@ void VUDisplayClassVest::ShowMeter(byte level, byte peak)
 				strip.setPixelColor(9-x,   VUColor(x));
 				strip.setPixelColor(x+30,  VUColor(x));
 			}
-			break;
-
-		case 1:	// One dot?
-			if (peak > 0)
-			{
-				strip.setPixelColor(10-peak, peakColor);
-				strip.setPixelColor(peak+29, peakColor);	
-			}
-			
 			break;
 
 		case 2: // white

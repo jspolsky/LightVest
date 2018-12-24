@@ -26,8 +26,8 @@ Features:
 #define BUTTONS_PIN   A2
 
 typedef enum { BUTTONS_NONE, BUTTONS_MODE, BUTTONS_COLOR, BUTTONS_BRIGHTNESS } btn_t;
-typedef enum { VMODE_VU, 
-               VMODE_SOLID, 
+typedef enum { VMODE_SOLID, 
+               VMODE_VU, 
                VMODE_MESSAGES,
                VMODE_UNUSED } vmode_t;
 
@@ -36,7 +36,7 @@ typedef enum { VMODE_VU,
 
 byte peak = 0;      // Peak level of column; used for falling dots
 byte peakCycle = 0;     // Toggles between 0 and 1. To prevent peak falling too fast, it only falls when this is 0
-vmode_t vmode = VMODE_VU;
+vmode_t vmode = VMODE_SOLID;
 
 // LOOK YOU GUYS I HAVE AUTOMATIC GAIN CONTROL!
 unsigned long millisAdjusted;   // the last time we adjusted the gain. Every second we'll reevaluate

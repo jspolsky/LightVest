@@ -1,6 +1,6 @@
 {
     "board": "adafruit:samd:adafruit_gemma_m0",
-    "port": "/dev/cu.usbmodem14601",
+    "port": "/dev/cu.usbmodem142301",
     "sketch": "LightVest.ino",
     "output": "../build"
 }
