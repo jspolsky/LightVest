@@ -32,6 +32,15 @@ void VUDisplayClassVest::setup()
 	iSolidColor = 0;
 	iVUMeterMode = 0;
 
+	colorMap[0] = CorrectedColor(30,144,255);	// trademark blue
+	colorMap[1] = CorrectedColor(255,0,0);		// red
+	colorMap[2] = CorrectedColor(255,192,64);	// yellow		
+	colorMap[3] = CorrectedColor(0,255,0);		// green		
+	colorMap[4] = CorrectedColor(255,0,255);	// purple	
+	colorMap[5] = CorrectedColor(255,128,0);	// orange	
+	colorMap[6] = CorrectedColor(255,255,255);	// white
+	colorMap[7] = CorrectedColor(255,204,153);	// offwhite	
+
 }
 
 uint16_t VUDisplayClassVest::getRange()
@@ -44,7 +53,7 @@ uint16_t VUDisplayClassVest::getRange()
 uint32_t VUDisplayClassVest::VUColor( byte b )
 {
 	// ok so this is your basic rainbow scheme
-	static uint32_t colorMap[] = 
+	static uint32_t _colorMap[] = 
 		{
 			CorrectedColor(0,0,143),	
 			CorrectedColor(255,0,255),	
@@ -58,7 +67,7 @@ uint32_t VUDisplayClassVest::VUColor( byte b )
 			CorrectedColor(255,255,255),	
 		};
 
-	return colorMap[ b ];
+	return _colorMap[ b ];
 }
 
 
@@ -118,20 +127,7 @@ void VUDisplayClassVest::ShowMeter(byte level, byte peak)
 
 void VUDisplayClassVest::ShowSolid()
 {
-	static uint32_t colorMap[] = 
-		{
-			CorrectedColor(30,144,255),		// trademark blue
 
-			CorrectedColor(255,0,0),		// red
-			CorrectedColor(255,192,64),		// yellow
-			CorrectedColor(0,255,0),		// green
-
-			CorrectedColor(255,0,255),		// purple
-			CorrectedColor(255,128,0),		// orange
-
-			CorrectedColor(255,255,255),	// white
-			CorrectedColor(255,204,153),	// offwhite
-		};
 
 	for (uint16_t x = 0; x < N_PIXELS; x++)
 		strip.setPixelColor(x, colorMap[iSolidColor]);

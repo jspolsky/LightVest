@@ -24,11 +24,13 @@ class VUDisplayClassVest
 
     private:
         Stream& Serial;
-        byte iSolidColor;            // color for Solid() mode
+        byte iSolidColor;            // color for Solid() mode - index into colorMap
         byte iVUMeterMode;
         byte iBrightnessLevel;       
         uint32_t VUColor(byte level);
         uint32_t CorrectedColor( byte r, byte g, byte b );
+
+        uint32_t colorMap[8];       // eight colors available for solid mode
     
     public:    
         Adafruit_NeoPixel strip;
